@@ -102,9 +102,11 @@ public class DBConnection {
 	}
 
 	/**
+	 * Converts a ResultSet into a List.
 	 * 
 	 * @param rs
-	 * @return
+	 *            The ResultSet to Convert.
+	 * @return The converted List.
 	 * @throws SQLException
 	 */
 	private List<HashMap<String, Object>> convertResultSetToList(ResultSet rs)

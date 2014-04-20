@@ -3,6 +3,7 @@ package server;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import clientConnect.ClientConnection;
@@ -65,6 +66,7 @@ public class Server {
 	}
 
 	private void initialize() {
+		Server.clients = new ArrayList<ClientConnection>();
 		Server.db = new DBConnection(connectToDB());
 		if (db != null) {
 			System.out.println("Connected to the database....");

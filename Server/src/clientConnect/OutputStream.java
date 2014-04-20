@@ -7,34 +7,39 @@ import java.net.Socket;
 
 public class OutputStream implements Runnable {
 
-	private ClientConnection client;
 	private BufferedWriter out;
-	private Socket clientSocket;
-	private Thread outstream;
 	private String message;
 
-	public OutputStream(ClientConnection clientConnection) {
-		this.client = clientConnection;
-		this.clientSocket = clientConnection.getClient();
-		this.outstream = new Thread(this);
-		this.outstream.start();
+	public OutputStream(Socket clientSocket) {
+		try {
+			setOut(new BufferedWriter(new OutputStreamWriter(
+					clientSocket.getOutputStream())));
+		} catch (IOException e) {
+			System.out.println("IOException:\n" + e.toString());
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void run() {
 		try {
-			setOut(new BufferedWriter(new OutputStreamWriter(
-					clientSocket.getOutputStream())));
-			out.write(message);
-			out.newLine();
-			out.flush();
-			out.close();
+			while (true) {
+				synchronized (this) {
+					this.wait();
+					out.write(message);
+					out.newLine();
+					out.flush();
+
+				}
+			}
 
 		} catch (IOException e) {
 			System.out.println("IOException:\n" + e.toString());
 			e.printStackTrace();
-		}
 
+		} catch (InterruptedException e) {
+			// Happens if someone interrupts your thread.
+		}
 	}
 
 	public BufferedWriter getOut() {

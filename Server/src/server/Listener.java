@@ -26,26 +26,24 @@ public class Listener implements Runnable {
 				System.out.println("Waiting for incoming connections on port: "
 						+ this.port + "....");
 				client = serverSocket.accept();
+				System.out.println(client.toString());
 				handleConnection(client);
 
 			}
 		} catch (IOException e) {
 			System.out.println("IOException:\n" + e.toString());
 			e.printStackTrace();
-		} finally {
-			if (client != null) {
-				try {
-					client.close();
-				} catch (IOException e) {
-					System.out.println("IOException:\n" + e.toString());
-					e.printStackTrace();
-				}
-			}
-		}
+		} /*
+		 * finally { if (client != null) { try { client.close(); } catch
+		 * (IOException e) { System.out.println("IOException:\n" +
+		 * e.toString()); e.printStackTrace(); } } }
+		 */
 	}
 
-	private void handleConnection(Socket client) throws IOException {
+	private void handleConnection(Socket client) {
+		System.out.println("Client connected!");
 		Server.addClients(new ClientConnection(client));
+
 	}
 
 	private boolean isRunning() {

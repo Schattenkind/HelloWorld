@@ -10,8 +10,10 @@ public class ClientConnection {
 
 	public ClientConnection(Socket client) {
 		this.setClient(client);
-		this.setIn(new InputStream(this));
-		this.setOut(new OutputStream(this));
+		this.setIn(new InputStream(client));
+		this.setOut(new OutputStream(client));
+		new Thread(in).start();
+		new Thread(out).start();
 	}
 
 	public OutputStream getOut() {

@@ -1,7 +1,6 @@
 package dbConnect;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -10,47 +9,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class DBConnection {
+/**
+ * Immutable class, functions as connection a database.
+ * 
+ * @author Tobias Arndt
+ * 
+ */
+public final class DBConnection {
 
-	private static final String SQL_DRIVER = "org.mariadb.jdbc.Driver";
-	private static final String MYSQL_URL = "jdbc:mysql://localhost:55555/test";
-	private static final String USER = "root";
-	private static final String PASSWORD = "root";
-	private Connection con;
+	private final Connection con;
 
-	public DBConnection() {
-		getConnection();
-	}
-
-	/**
-	 * Establishes a new connection to a DB.
-	 * 
-	 * @return true if successful and false if failed.
-	 */
-	public boolean getConnection() {
-		try {
-			Class.forName(SQL_DRIVER).newInstance();
-			System.out.println("SQL-Driver Loaded....");
-			setCon(DriverManager.getConnection(MYSQL_URL, USER, PASSWORD));
-			System.out.println("Connected to the database....");
-			return true;
-		} catch (ClassNotFoundException e) {
-			System.out.println("ClassNotFoundException:\n" + e.toString());
-			e.printStackTrace();
-			return false;
-		} catch (SQLException e) {
-			System.out.println("SQLException:\n" + e.toString());
-			e.printStackTrace();
-			return false;
-		} catch (InstantiationException e) {
-			System.out.println("InstantiationException:\n" + e.toString());
-			e.printStackTrace();
-			return false;
-		} catch (IllegalAccessException e) {
-			System.out.println("IllegalAccessException:\n" + e.toString());
-			e.printStackTrace();
-			return false;
-		}
+	public DBConnection(Connection con) {
+		this.con = con;
 	}
 
 	/**
@@ -76,12 +46,38 @@ public class DBConnection {
 			st = con.createStatement();
 			rs = st.executeQuery(query);
 			result = convertResultSetToList(rs);
+			rs.close();
+			st.close();
 
 		} catch (SQLException e) {
 			System.out.println("SQLException:\n" + e.toString());
 			e.printStackTrace();
 		}
 		return result;
+	}
+
+	/**
+	 * Use this functions for insert-, update-, create-, ... statements.
+	 * 
+	 * @param query
+	 *            The SQL-Query to be executed (except selects).
+	 */
+	public int executeUpdate(String query) {
+		if (query.toLowerCase().startsWith("select")) {
+			throw new WrongStatementException();
+		}
+		Statement st = null;
+		int changed = 0;
+		try {
+			st = con.createStatement();
+			changed = st.executeUpdate(query);
+			st.close();
+
+		} catch (SQLException e) {
+			System.out.println("SQLException:\n" + e.toString());
+			e.printStackTrace();
+		}
+		return changed;
 	}
 
 	/**
@@ -124,13 +120,5 @@ public class DBConnection {
 		}
 
 		return list;
-	}
-
-	public Connection getCon() {
-		return con;
-	}
-
-	public void setCon(Connection con) {
-		this.con = con;
 	}
 }

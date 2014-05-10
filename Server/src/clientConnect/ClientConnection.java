@@ -39,4 +39,11 @@ public class ClientConnection {
 	public void setClient(Socket client) {
 		this.client = client;
 	}
+
+	public void sendMessage(String message) {
+		this.getOut().setMessage(message);
+		synchronized (this.getOut()) {
+			this.getOut().notify();
+		}
+	}
 }

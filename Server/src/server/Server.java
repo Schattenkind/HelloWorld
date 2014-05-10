@@ -6,14 +6,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import clientConnect.ClientConnection;
+import user.User;
 import dbConnect.DBConnection;
 
 public class Server {
 
 	private static DBConnection db;
 	private static Thread listener;
-	private static List<ClientConnection> clients;
+	private static List<User> users;
 	private int port = 1234;
 
 	public Server() {
@@ -29,12 +29,12 @@ public class Server {
 		Server.db = db;
 	}
 
-	public static List<ClientConnection> getClients() {
-		return clients;
+	public static List<User> getUsers() {
+		return users;
 	}
 
-	public static void addClients(ClientConnection clients) {
-		Server.clients.add(clients);
+	public static void addUser(User user) {
+		Server.users.add(user);
 	}
 
 	private Connection connectToDB() {
@@ -66,7 +66,7 @@ public class Server {
 	}
 
 	private void initialize() {
-		Server.clients = new ArrayList<ClientConnection>();
+		Server.users = new ArrayList<User>();
 		Server.db = new DBConnection(connectToDB());
 		if (db != null) {
 			System.out.println("Connected to the database....");

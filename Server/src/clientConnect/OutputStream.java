@@ -29,7 +29,6 @@ public class OutputStream implements Runnable {
 					out.write(message);
 					out.newLine();
 					out.flush();
-
 				}
 			}
 
@@ -38,7 +37,13 @@ public class OutputStream implements Runnable {
 			e.printStackTrace();
 
 		} catch (InterruptedException e) {
-			// Happens if someone interrupts your thread.
+
+			try {
+				out.close();
+			} catch (IOException e1) {
+				System.out.println("IOException:\n" + e.toString());
+				e.printStackTrace();
+			}
 		}
 	}
 

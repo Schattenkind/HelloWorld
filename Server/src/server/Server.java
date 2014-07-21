@@ -1,8 +1,7 @@
 package server;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import helper.Config;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +16,7 @@ public class Server {
 	private int port = 1234;
 
 	public Server() {
+		Config.loadConfig();
 		initialize();
 		start();
 	}
@@ -37,44 +37,19 @@ public class Server {
 		Server.users.add(user);
 	}
 
-	private Connection connectToDB() {
-		try {
-			Class.forName("org.mariadb.jdbc.Driver").newInstance();
-			System.out.println("SQL-Driver Loaded....");
-			Connection con = (DriverManager.getConnection(
-					"jdbc:mysql://localhost:55555/test", "root", "root"));
-
-			return con;
-
-		} catch (ClassNotFoundException e) {
-			System.out.println("ClassNotFoundException:\n" + e.toString());
-			e.printStackTrace();
-
-		} catch (SQLException e) {
-			System.out.println("SQLException:\n" + e.toString());
-			e.printStackTrace();
-
-		} catch (InstantiationException e) {
-			System.out.println("InstantiationException:\n" + e.toString());
-			e.printStackTrace();
-
-		} catch (IllegalAccessException e) {
-			System.out.println("IllegalAccessException:\n" + e.toString());
-			e.printStackTrace();
-		}
-		return null;
-	}
-
 	private void initialize() {
 		Server.users = new ArrayList<User>();
-		Server.db = new DBConnection(connectToDB());
+		Server.db = new DBConnection(Config.getValue("DBURL"),
+				Config.getValue("DBUSER"), Config.getValue("DBPW"));
 		if (db != null) {
 			System.out.println("Connected to the database....");
 		}
+		// TODO
 		Server.listener = new Thread(new Listener(this.port));
 		if (listener != null) {
 			System.out.println("Server initilized....");
 		}
+		// TODO
 
 	}
 

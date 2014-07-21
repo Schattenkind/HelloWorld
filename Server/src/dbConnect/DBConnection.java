@@ -1,6 +1,7 @@
 package dbConnect;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -10,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Immutable class, functions as connection a database.
+ * Immutable class, functions as connection to a database.
  * 
  * @author Tobias Arndt
  * 
@@ -19,8 +20,46 @@ public final class DBConnection {
 
 	private final Connection con;
 
-	public DBConnection(Connection con) {
-		this.con = con;
+	public DBConnection(String sever, String user, String pw) {
+		this.con = connectToDB(sever, user, pw);
+	}
+
+	/**
+	 * Establishes a connection to a database.
+	 * 
+	 * @param sever
+	 *            Server IP to connect to.
+	 * @param user
+	 *            User name.
+	 * @param pw
+	 *            Password.
+	 * @return The established connection.
+	 */
+	private Connection connectToDB(String sever, String user, String pw) {
+		try {
+			Class.forName("org.mariadb.jdbc.Driver").newInstance();
+			System.out.println("SQL-Driver Loaded....");
+			Connection con = (DriverManager.getConnection(sever, user, pw));
+
+			return con;
+
+		} catch (ClassNotFoundException e) {
+			System.out.println("ClassNotFoundException:\n" + e.toString());
+			e.printStackTrace();
+
+		} catch (SQLException e) {
+			System.out.println("SQLException:\n" + e.toString());
+			e.printStackTrace();
+
+		} catch (InstantiationException e) {
+			System.out.println("InstantiationException:\n" + e.toString());
+			e.printStackTrace();
+
+		} catch (IllegalAccessException e) {
+			System.out.println("IllegalAccessException:\n" + e.toString());
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	/**

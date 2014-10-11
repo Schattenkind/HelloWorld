@@ -1,46 +1,57 @@
 package server;
 
+import helper.ConsoleWriter;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 import user.User;
-import clientConnect.ClientConnection;
 
 public class Listener implements Runnable {
 
 	private boolean isRunning;
-	private int port;
 
-	public Listener(int port) {
-		this.port = port;
+	public Listener() {
 		this.isRunning = false;
 	}
 
+	// TODO listener outside of a thread
 	@Override
 	public void run() {
 		this.isRunning = true;
 		Socket client = null;
 		ServerSocket serverSocket = null;
 		try {
-			serverSocket = new ServerSocket(this.port);
+			serverSocket = new ServerSocket(Server.port);
+			// TODO BAD WAY TO INTERRUPT, do i even need this or is it enough to
+			// stop the thread?
 			while (isRunning()) {
-				System.out.println("Waiting for incoming connections on port "
-						+ this.port + "....");
+				ConsoleWriter.write("Waiting for incoming connections on port "
+						+ Server.port);
 				client = serverSocket.accept();
-				System.out.println(client.toString());
+				ConsoleWriter.write("Connection established: "
+						+ client.toString());
 				handleConnection(client);
 
 			}
 		} catch (IOException e) {
-			System.out.println("IOException:\n" + e.toString());
-			e.printStackTrace();
+			try {
+				serverSocket.close();
+			} catch (IOException e1) {
+				ConsoleWriter.write(e1);
+			}
+		} finally {
+			try {
+				serverSocket.close();
+			} catch (IOException e1) {
+				ConsoleWriter.write(e1);
+			}
 		}
 	}
 
 	private void handleConnection(Socket client) {
-		System.out.println("Client connected!");
-		Server.addUser(new User(-1, new ClientConnection(client)));
+		Server.addUser(new User("-1", client));
 	}
 
 	private boolean isRunning() {

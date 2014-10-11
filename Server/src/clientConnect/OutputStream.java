@@ -1,22 +1,24 @@
 package clientConnect;
 
+import helper.ConsoleWriter;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.net.Socket;
 
 public class OutputStream implements Runnable {
 
 	private BufferedWriter out;
+	private ClientConnection clientCon;
 	private String message;
 
-	public OutputStream(Socket clientSocket) {
+	public OutputStream(ClientConnection clientCon) {
+		this.clientCon = clientCon;
 		try {
-			setOut(new BufferedWriter(new OutputStreamWriter(
-					clientSocket.getOutputStream())));
+			this.out = (new BufferedWriter(new OutputStreamWriter(clientCon
+					.getClient().getOutputStream())));
 		} catch (IOException e) {
-			System.out.println("IOException:\n" + e.toString());
-			e.printStackTrace();
+			ConsoleWriter.write(e);
 		}
 	}
 
@@ -32,27 +34,21 @@ public class OutputStream implements Runnable {
 				}
 			}
 
-		} catch (IOException e) {
-			System.out.println("IOException:\n" + e.toString());
-			e.printStackTrace();
-
-		} catch (InterruptedException e) {
-
-			try {
-				out.close();
-			} catch (IOException e1) {
-				System.out.println("IOException:\n" + e.toString());
-				e.printStackTrace();
+		} catch (Exception e) {
+			if (!clientCon.close()) {
+				ConsoleWriter.write(e);
 			}
 		}
 	}
 
-	public BufferedWriter getOut() {
-		return out;
-	}
-
-	public void setOut(BufferedWriter out) {
-		this.out = out;
+	public boolean close() {
+		try {
+			this.out.close();
+		} catch (IOException e) {
+			ConsoleWriter.write(e);
+			return false;
+		}
+		return true;
 	}
 
 	public String getMessage() {

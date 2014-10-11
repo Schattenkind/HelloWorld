@@ -18,6 +18,7 @@ public class Config {
 		config.put("DBURL", "jdbc:mysql://localhost:55555/server");
 		config.put("DBUSER", "root");
 		config.put("DBPW", "root");
+		config.put("PORT", "1234");
 
 		// overwrite them with the values from the config file
 		try (BufferedReader br = new BufferedReader(

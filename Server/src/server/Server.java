@@ -1,6 +1,7 @@
 package server;
 
 import helper.Config;
+import helper.ConsoleWriter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +14,7 @@ public class Server {
 	private static DBConnection db;
 	private static Thread listener;
 	private static List<User> users;
-	private int port = 1234;
+	public static int port = 1234;
 
 	public Server() {
 		Config.loadConfig();
@@ -21,11 +22,11 @@ public class Server {
 		start();
 	}
 
-	public DBConnection getDb() {
+	public static DBConnection getDb() {
 		return db;
 	}
 
-	public void setDb(DBConnection db) {
+	public static void setDb(DBConnection db) {
 		Server.db = db;
 	}
 
@@ -38,16 +39,27 @@ public class Server {
 	}
 
 	private void initialize() {
+
+		try {
+			Server.port = Integer.valueOf(Config.getValue("PORT"));
+		} catch (NumberFormatException e) {
+			ConsoleWriter.write("Server port must be a number, please check the config file!");
+			return;
+		}
+
 		Server.users = new ArrayList<User>();
+
 		Server.db = new DBConnection(Config.getValue("DBURL"),
 				Config.getValue("DBUSER"), Config.getValue("DBPW"));
+
 		if (db != null) {
-			System.out.println("Connected to the database....");
+			ConsoleWriter.write("Connected to the database");
 		}
 		// TODO
-		Server.listener = new Thread(new Listener(this.port));
+
+		Server.listener = new Thread(new Listener());
 		if (listener != null) {
-			System.out.println("Server initilized....");
+			ConsoleWriter.write("Server initilized");
 		}
 		// TODO
 

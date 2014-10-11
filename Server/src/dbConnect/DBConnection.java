@@ -1,5 +1,7 @@
 package dbConnect;
 
+import helper.ConsoleWriter;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -38,26 +40,13 @@ public final class DBConnection {
 	private Connection connectToDB(String sever, String user, String pw) {
 		try {
 			Class.forName("org.mariadb.jdbc.Driver").newInstance();
-			System.out.println("SQL-Driver Loaded....");
+			ConsoleWriter.write("SQL-Driver Loaded");
 			Connection con = (DriverManager.getConnection(sever, user, pw));
 
 			return con;
 
-		} catch (ClassNotFoundException e) {
-			System.out.println("ClassNotFoundException:\n" + e.toString());
-			e.printStackTrace();
-
-		} catch (SQLException e) {
-			System.out.println("SQLException:\n" + e.toString());
-			e.printStackTrace();
-
-		} catch (InstantiationException e) {
-			System.out.println("InstantiationException:\n" + e.toString());
-			e.printStackTrace();
-
-		} catch (IllegalAccessException e) {
-			System.out.println("IllegalAccessException:\n" + e.toString());
-			e.printStackTrace();
+		} catch (Exception e) {
+			ConsoleWriter.write(e);
 		}
 		return null;
 	}
@@ -73,25 +62,28 @@ public final class DBConnection {
 	 *            The SQL-Query to be executed (must be a select statement!).
 	 * @return Return a List containing a HashMap of rows for a select
 	 *         statement.
+	 * @throws SQLException 
+	 * @throws WrongStatementException
 	 */
-	public List<HashMap<String, Object>> selectQuery(String query) {
+	public List<HashMap<String, String>> selectQuery(String query) {
 		if (!query.toLowerCase().startsWith("select")) {
 			throw new WrongStatementException();
 		}
 		Statement st = null;
 		ResultSet rs = null;
-		List<HashMap<String, Object>> result = null;
+		List<HashMap<String, String>> result = null;
+
 		try {
 			st = con.createStatement();
 			rs = st.executeQuery(query);
 			result = convertResultSetToList(rs);
 			rs.close();
 			st.close();
-
 		} catch (SQLException e) {
-			System.out.println("SQLException:\n" + e.toString());
-			e.printStackTrace();
+			ConsoleWriter.write(e);
 		}
+
+		
 		return result;
 	}
 
@@ -100,22 +92,20 @@ public final class DBConnection {
 	 * 
 	 * @param query
 	 *            The SQL-Query to be executed (except selects).
+	 * @throws SQLException 
+	 * @throws WrongStatementException
 	 */
-	public int executeUpdate(String query) {
+	public int executeUpdate(String query) throws SQLException {
 		if (query.toLowerCase().startsWith("select")) {
 			throw new WrongStatementException();
 		}
 		Statement st = null;
 		int changed = 0;
-		try {
-			st = con.createStatement();
-			changed = st.executeUpdate(query);
-			st.close();
+		
+		st = con.createStatement();
+		changed = st.executeUpdate(query);
+		st.close();
 
-		} catch (SQLException e) {
-			System.out.println("SQLException:\n" + e.toString());
-			e.printStackTrace();
-		}
 		return changed;
 	}
 
@@ -127,11 +117,10 @@ public final class DBConnection {
 	public boolean closeConnection() {
 		try {
 			con.close();
-			System.out.println("DB disconnected successful!");
+			ConsoleWriter.write("DB disconnected successful!");
 			return true;
 		} catch (SQLException e) {
-			System.out.println("SQLException:\n" + e.toString());
-			e.printStackTrace();
+			ConsoleWriter.write(e);
 			return false;
 		}
 	}
@@ -144,16 +133,16 @@ public final class DBConnection {
 	 * @return The converted List.
 	 * @throws SQLException
 	 */
-	private List<HashMap<String, Object>> convertResultSetToList(ResultSet rs)
+	private List<HashMap<String, String>> convertResultSetToList(ResultSet rs)
 			throws SQLException {
 		ResultSetMetaData md = rs.getMetaData();
 		int columns = md.getColumnCount();
-		List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+		List<HashMap<String, String>> list = new ArrayList<HashMap<String, String>>();
 
 		while (rs.next()) {
-			HashMap<String, Object> row = new HashMap<String, Object>(columns);
+			HashMap<String, String> row = new HashMap<String, String>(columns);
 			for (int i = 1; i <= columns; ++i) {
-				row.put(md.getColumnName(i), rs.getObject(i));
+				row.put(md.getColumnName(i), rs.getObject(i).toString());
 			}
 			list.add(row);
 		}

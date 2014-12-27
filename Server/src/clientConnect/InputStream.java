@@ -60,6 +60,8 @@ public class InputStream implements Runnable {
 
 		} else if (command.equals("ADDFRIEND")) {
 
+		} else if (command.equals("USERINFO")) {
+			this.clientCon.getUser().sendUserInfo();
 		}
 		/*
 		 * for (User c : Server.getUsers()) { ClientConnection out =

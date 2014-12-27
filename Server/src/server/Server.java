@@ -43,7 +43,8 @@ public class Server {
 		try {
 			Server.port = Integer.valueOf(Config.getValue("PORT"));
 		} catch (NumberFormatException e) {
-			ConsoleWriter.write("Server port must be a number, please check the config file!");
+			ConsoleWriter
+					.write("Server port must be a number, please check the config file!");
 			return;
 		}
 
@@ -51,11 +52,12 @@ public class Server {
 
 		Server.db = new DBConnection(Config.getValue("DBURL"),
 				Config.getValue("DBUSER"), Config.getValue("DBPW"));
-
-		if (db != null) {
+		if (db.getCon() != null) {
 			ConsoleWriter.write("Connected to the database");
+		} else {
+			ConsoleWriter.write("Failed to connect to database, please check the config file!");
+			return;
 		}
-		// TODO
 
 		Server.listener = new Thread(new Listener());
 		if (listener != null) {

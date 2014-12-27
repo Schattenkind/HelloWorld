@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Immutable class, functions as connection to a database.
+ * Functions as connection to a database.
  * 
  * @author Tobias Arndt
  * 
@@ -47,8 +47,9 @@ public final class DBConnection {
 
 		} catch (Exception e) {
 			ConsoleWriter.write(e);
+			return null;
 		}
-		return null;
+
 	}
 
 	/**
@@ -62,7 +63,7 @@ public final class DBConnection {
 	 *            The SQL-Query to be executed (must be a select statement!).
 	 * @return Return a List containing a HashMap of rows for a select
 	 *         statement.
-	 * @throws SQLException 
+	 * @throws SQLException
 	 * @throws WrongStatementException
 	 */
 	public List<HashMap<String, String>> selectQuery(String query) {
@@ -83,16 +84,17 @@ public final class DBConnection {
 			ConsoleWriter.write(e);
 		}
 
-		
 		return result;
 	}
 
 	/**
 	 * Use this functions for insert-, update-, create-, ... statements.
 	 * 
+	 * @return Returns the amount of rows that have been changed.
+	 * 
 	 * @param query
 	 *            The SQL-Query to be executed (except selects).
-	 * @throws SQLException 
+	 * @throws SQLException
 	 * @throws WrongStatementException
 	 */
 	public int executeUpdate(String query) throws SQLException {
@@ -101,7 +103,7 @@ public final class DBConnection {
 		}
 		Statement st = null;
 		int changed = 0;
-		
+
 		st = con.createStatement();
 		changed = st.executeUpdate(query);
 		st.close();
@@ -148,5 +150,9 @@ public final class DBConnection {
 		}
 
 		return list;
+	}
+
+	public Connection getCon() {
+		return con;
 	}
 }

@@ -3,7 +3,10 @@ package user;
 import helper.ConsoleWriter;
 
 import java.net.Socket;
+import java.sql.SQLDataException;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
+import java.util.HashMap;
 
 import secure.Password;
 import server.Server;
@@ -11,20 +14,21 @@ import clientConnect.ClientConnection;
 
 public class User {
 
-	private String id;
+	private static final int DBCOLUMNS = 7;
+	private String username;
 	private ClientConnection client;
 
-	public User(String id, Socket client) {
-		this.id = id;
+	public User(String username, Socket client) {
+		this.username = username;
 		this.client = new ClientConnection(client, this);
 	}
 
 	public String getId() {
-		return id;
+		return username;
 	}
 
 	public void setId(String id) {
-		this.id = id;
+		this.username = id;
 	}
 
 	public ClientConnection getClient() {
@@ -36,40 +40,79 @@ public class User {
 	}
 
 	public void addUser(String[] info) {
-		String surname = info[1];
-		String name = info[2];
-		String birthdate = info[3];
-		String email = info[4];
-		String nickname = info[5];
-		String pw = info[6];
-		if (isValidName(surname) && isValidName(name) && isValidName(nickname)
-				&& isValidMail(email) && isValidPW(pw)) {
+		if (info.length != User.DBCOLUMNS) {
+			this.client.sendMessage("NEWUSER;FALSE");
+			return;
+		}
+		String pw = info[1];
+		String username = info[2];
+		String email = info[3];
+		String birthdate = info[4];
+		String name = info[5];
+		String surname = info[6];
+		if (isValidName(surname) && isValidName(name)
+				&& isValidUserName(username) && isValidMail(email)
+				&& isValidPW(pw)) {
 			try {
-				Server.getDb()
+				int a = Server
+						.getDb()
 						.executeUpdate(
-								"INSERT INTO `user` (`PW`, `SURNAME`, `NAME`, `BIRTHDATE`, `EMAIL`, `NICKNAME`) VALUES ('"
+								"INSERT INTO `user` (`PASSWORD`, `USERNAME`, `EMAIL`, `BIRTHDATE`, `NAME`, `SURNAME`) VALUES ('"
 										+ Password.hashPassword(pw)
 										+ "', '"
-										+ surname
+										+ username
 										+ "','"
-										+ name
+										+ email
 										+ "', Cast('"
 										+ birthdate
-										+ "' as datetime), '"
-										+ email + "','" + nickname + "');");
+										+ "' as date), '"
+										+ name
+										+ "','"
+										+ surname + "');");
+				if (a == 1) {
+					this.client.sendMessage("NEWUSER;TRUE");
+				} else {
+					this.client.sendMessage("NEWUSER;FALSE");
+				}
+			} catch (SQLIntegrityConstraintViolationException e) {
+				this.client.sendMessage("NEWUSER;EXISTS");
+			} catch (SQLDataException e) {
+				this.client.sendMessage("NEWUSER;DATE");
 			} catch (SQLException e) {
 				ConsoleWriter.write(e);
 			}
 		}
 	}
-	
-	public void verifyPassword(String id, String pw){
-		String password = Server.getDb().selectQuery("select PW from user where ID = " + id).get(0).get("PW");
-		if (Password.checkPassword(pw, password)){
-			this.id = id;
-			this.client.sendMessage("LOGIN;TRUE");
+
+	public void sendUserInfo() {
+		HashMap<String, String> userinfo = Server
+				.getDb()
+				.selectQuery(
+						"select * from user where USERNAME = '" + username
+								+ "'").get(0);
+		this.client.sendMessage("USERINFO;" + userinfo.get("USERNAME") + ";"
+				+ userinfo.get("EMAIL") + ";" + userinfo.get("BIRTHDATE") + ";"
+				+ userinfo.get("NAME") + "," + userinfo.get("SURNAME") + ";"
+				+ userinfo.get("ID"));
+	}
+
+	private boolean isValidUserName(String username) {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
+	public void verifyPassword(String username, String pw) {
+		String password = Server
+				.getDb()
+				.selectQuery(
+						"select PASSWORD from user where USERNAME = '"
+								+ username + "'").get(0).get("PASSWORD");
+		if (Password.checkPassword(pw, password)) {
+			this.username = username;
+			this.client.sendMessage("LOGIN;TRUE;" + username);
+		} else {
+			this.client.sendMessage("LOGIN;FALSE");
 		}
-		this.client.sendMessage("LOGIN;FALSE");
 	}
 
 	private boolean isValidName(String name) {

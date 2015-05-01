@@ -61,7 +61,7 @@ public class Server {
 
 		Server.listener = new Thread(new Listener());
 		if (listener != null) {
-			ConsoleWriter.write("Server initilized");
+			ConsoleWriter.write("Server initialized");
 		}
 		// TODO
 

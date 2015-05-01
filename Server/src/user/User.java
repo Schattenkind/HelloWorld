@@ -84,16 +84,19 @@ public class User {
 		}
 	}
 
+	/**
+	 * Send user info but exclude the password.
+	 */
 	public void sendUserInfo() {
 		HashMap<String, String> userinfo = Server
 				.getDb()
 				.selectQuery(
 						"select * from user where USERNAME = '" + username
 								+ "'").get(0);
-		this.client.sendMessage("USERINFO;" + userinfo.get("USERNAME") + ";"
-				+ userinfo.get("EMAIL") + ";" + userinfo.get("BIRTHDATE") + ";"
-				+ userinfo.get("NAME") + "," + userinfo.get("SURNAME") + ";"
-				+ userinfo.get("ID"));
+		this.client.sendMessage("USERINFO;" + userinfo.get("ID") + ";"
+				+ userinfo.get("USERNAME") + ";" + userinfo.get("EMAIL") + ";"
+				+ userinfo.get("BIRTHDATE") + ";" + userinfo.get("NAME") + ","
+				+ userinfo.get("SURNAME"));
 	}
 
 	private boolean isValidUserName(String username) {

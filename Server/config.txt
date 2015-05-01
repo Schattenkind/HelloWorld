@@ -1,0 +1,3 @@
+DBPW=root
+DBURL=jdbc:mysql://localhost:55555/server
+DBUSER=root
